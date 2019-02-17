@@ -17,11 +17,12 @@ import android.os.Handler;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ListView;
-import android.widget.Toast;
 
 public class FirstPage extends Activity {
 
 	private Handler handler;
+
+	private int SPLASH_LENGTH = 1000;
 
 	// single list and its adapter
 	private ListView main_list;
@@ -43,17 +44,32 @@ public class FirstPage extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.first_page_layout);
 
-		this.initPage();
+		super.onCreate(savedInstanceState);
+
+		setContentView(R.layout.splash_screen);
+
+		// handler for main looper
+		this.handler = new Handler(this.getMainLooper());
+
+		this.handler.postDelayed(new Runnable() {
+
+			@Override
+			public void run() {
+
+				initPage();
+
+			}
+		}, this.SPLASH_LENGTH);
+
+		// this.initPage();
 
 	}
 
 	private void initPage() {
 
-		// handler for main looper
-		this.handler = new Handler(this.getMainLooper());
+		// change layout, remove splash screen
+		this.setContentView(R.layout.first_page_layout);
 
 		// load category and sizes "configuration"
 		this.initConfig();
@@ -72,7 +88,15 @@ public class FirstPage extends Activity {
 		this.adapter = new PictogramAdapter(this, R.layout.list_row, R.layout.single_pictogram,
 				this.adapter_source, this.pictogram_click_listener);
 
-		this.main_list.setAdapter(this.adapter);
+		this.handler.post(new Runnable() {
+
+			@Override
+			public void run() {
+
+				main_list.setAdapter(adapter);
+
+			}
+		});
 
 	}
 
@@ -115,8 +139,6 @@ public class FirstPage extends Activity {
 			public void onClick(View view) {
 
 				String view_tag = (String) view.getTag();
-
-				Toast.makeText(getApplicationContext(), view_tag, Toast.LENGTH_SHORT).show();
 
 				handleClickFrom(view_tag);
 

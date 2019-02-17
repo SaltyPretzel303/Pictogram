@@ -53,12 +53,13 @@ public final class R {
         public static final int povrce_1_1=0x7f020024;
         public static final int povrce_2_0=0x7f020025;
         public static final int povrce_2_1=0x7f020026;
-        public static final int voce_0_0=0x7f020027;
-        public static final int voce_0_1=0x7f020028;
-        public static final int voce_1_0=0x7f020029;
-        public static final int voce_1_1=0x7f02002a;
-        public static final int voce_2_0=0x7f02002b;
-        public static final int voce_2_1=0x7f02002c;
+        public static final int splash_screen=0x7f020027;
+        public static final int voce_0_0=0x7f020028;
+        public static final int voce_0_1=0x7f020029;
+        public static final int voce_1_0=0x7f02002a;
+        public static final int voce_1_1=0x7f02002b;
+        public static final int voce_2_0=0x7f02002c;
+        public static final int voce_2_1=0x7f02002d;
     }
     public static final class id {
         public static final int main_list=0x7f070000;
@@ -69,6 +70,7 @@ public final class R {
         public static final int first_page_layout=0x7f030000;
         public static final int list_row=0x7f030001;
         public static final int single_pictogram=0x7f030002;
+        public static final int splash_screen=0x7f030003;
     }
     public static final class string {
         public static final int app_name=0x7f040000;
