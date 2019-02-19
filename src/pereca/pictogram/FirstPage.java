@@ -1,29 +1,35 @@
 package pereca.pictogram;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
+import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class FirstPage extends Activity {
 
 	private Handler handler;
 
-	private int SPLASH_LENGTH = 1000;
+	private int SPLASH_LENGTH = 500;
 
 	// single list and its adapter
 	private ListView main_list;
@@ -41,7 +47,13 @@ public class FirstPage extends Activity {
 	private String current_position;
 	private String current_selected;
 
+	private String current_played;
+
 	private OnClickListener pictogram_click_listener;
+
+	private boolean in_splash;
+
+	private MediaPlayer player;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +61,8 @@ public class FirstPage extends Activity {
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.splash_screen);
+
+		this.in_splash = true;
 
 		// handler for main looper
 		this.handler = new Handler(this.getMainLooper());
@@ -63,14 +77,14 @@ public class FirstPage extends Activity {
 			}
 		}, this.SPLASH_LENGTH);
 
-		// this.initPage();
-
 	}
 
 	private void initPage() {
 
 		// change layout, remove splash screen
 		this.setContentView(R.layout.first_page_layout);
+
+		this.in_splash = false;
 
 		// load category and sizes "configuration"
 		this.initConfig();
@@ -89,15 +103,7 @@ public class FirstPage extends Activity {
 		this.adapter = new PictogramAdapter(this, R.layout.list_row, R.layout.single_pictogram,
 				this.adapter_source, this.pictogram_click_listener);
 
-		this.handler.post(new Runnable() {
-
-			@Override
-			public void run() {
-
-				main_list.setAdapter(adapter);
-
-			}
-		});
+		this.main_list.setAdapter(this.adapter);
 
 	}
 
@@ -129,29 +135,31 @@ public class FirstPage extends Activity {
 		// define trasitions
 		this.transition_mapping = new HashMap<String, String>();
 
-		this.transition_mapping.put("naslovna-0-0", "emotikon");
-		this.transition_mapping.put("naslovna-0-1", "hrana");
-		this.transition_mapping.put("naslovna-1-0", "igre");
-		this.transition_mapping.put("naslovna-1-1", "medicina");
-		this.transition_mapping.put("naslovna-2-0", "povrce");
-		this.transition_mapping.put("naslovna-2-1", "voce");
+		this.transition_mapping.put("naslovna-0-0", "medicina");
+		this.transition_mapping.put("naslovna-0-1", "igre");
+		this.transition_mapping.put("naslovna-1-0", "povrce");
+		this.transition_mapping.put("naslovna-1-1", "voce");
+		this.transition_mapping.put("naslovna-2-0", "hrana");
+		this.transition_mapping.put("naslovna-2-1", "emotikon");
 
 		this.pictogram_click_listener = new OnClickListener() {
 
 			@Override
 			public void onClick(View view) {
 
+				// pictogram position in format: name_row_column
 				String view_tag = (String) view.getTag();
 
-				int position = main_list.getVerticalScrollbarPosition();
+				// int position = main_list.getVerticalScrollbarPosition();
 
 				handleClickFrom(view_tag);
 
 				((ArrayAdapter<RowContainer>) main_list.getAdapter()).notifyDataSetChanged();
 
-				main_list.setVerticalScrollbarPosition(position);
+				// main_list.setVerticalScrollbarPosition(position);
 
 			}
+
 		};
 
 	}
@@ -179,6 +187,8 @@ public class FirstPage extends Activity {
 
 		} else {
 
+			this.playSound(infos[0] + "_" + infos[1] + "_" + infos[2]);
+
 			if (this.current_selected != null) {
 
 				// remove filter from selected
@@ -196,6 +206,47 @@ public class FirstPage extends Activity {
 			this.current_selected = source;
 
 		}
+
+	}
+
+	private void playSound(String resource) {
+
+		int res_id = this.getResources().getIdentifier(resource, "raw", getPackageName());
+
+		if (this.player == null) {
+
+			this.player = MediaPlayer.create(this, res_id);
+
+		} else {
+
+			if (this.current_played.equals(resource)) {
+
+				// click on the same icon
+
+				if (this.player.isPlaying()) {
+
+					this.player.pause();
+					this.player.seekTo(0);
+				}
+
+			} else {
+
+				// different icon
+
+				if (this.player.isPlaying()) {
+					this.player.stop();
+					this.player.release();
+				}
+
+				this.player = MediaPlayer.create(this, res_id);
+
+			}
+
+		}
+
+		player.start();
+
+		this.current_played = resource;
 
 	}
 
@@ -243,7 +294,7 @@ public class FirstPage extends Activity {
 	@Override
 	public void onBackPressed() {
 
-		if (!this.current_position.equals("naslovna")) {
+		if (!this.in_splash && !this.current_position.equals("naslovna")) {
 
 			// restore selected pictogram
 			if (this.current_selected != null) {
